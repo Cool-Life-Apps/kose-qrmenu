@@ -51,7 +51,17 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
+    <div className="bg-white min-h-screen max-w-md mx-auto shadow-lg rounded-xl overflow-hidden relative">
+      {/* Sol üstte ok butonu */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-10 p-2 rounded-full bg-white shadow hover:bg-gray-100"
+        aria-label="Geri"
+      >
+        <svg width="24" height="24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
       <div className="relative h-64 w-full">
         {item.imageUrl && (
           <Image 
@@ -67,12 +77,7 @@ export default function ProductDetailPage() {
         <h1 className="text-3xl font-bold mb-2">{item.name}</h1>
         <p className="text-gray-600 mb-4">{item.description}</p>
         <p className="text-2xl font-semibold text-orange-600 mb-6">{item.price} ₺</p>
-        <button
-          onClick={() => router.back()}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Geri
-        </button>
+        {/* Eski geri butonu kaldırıldı */}
       </div>
     </div>
   );
