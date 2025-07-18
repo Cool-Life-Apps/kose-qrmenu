@@ -1,8 +1,8 @@
-# 🍽️ Köşe QR Menü Uygulaması
+# 🍽️ Köse QR Menü Uygulaması
 
 ## ✨ Projeye Genel Bakış
 
-Köşe QR Menü Uygulaması, modern işletmeler için tasarlanmış, tamamen duyarlı ve kullanıcı dostu bir web uygulamasıdır. Müşterilerinizin QR kodunu tarayarak doğrudan menülerinize ulaşmasını sağlar ve işletmenizin dijital varlığını güçlendirir. Pastane ve Kuaför gibi farklı işletme türleri için özelleştirilebilir menü yönetimi sunar.
+Köse QR Menü Uygulaması, modern işletmeler için tasarlanmış, tamamen duyarlı ve kullanıcı dostu bir web uygulamasıdır. Müşterilerinizin QR kodunu tarayarak doğrudan menülerinize ulaşmasını sağlar ve işletmenizin dijital varlığını güçlendirir. Pastane ve Kuaför gibi farklı işletme türleri için özelleştirilebilir menü yönetimi sunar.
 
 ## 🚀 Özellikler
 
