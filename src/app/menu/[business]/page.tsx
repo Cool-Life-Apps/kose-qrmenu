@@ -2,6 +2,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { db } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState, useRef } from 'react';
@@ -59,11 +60,11 @@ export default function MenuPage() {
   }, [business]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Yükleniyor...</div>;
   }
 
   if (!menu) {
-    return <div>Menu not found</div>;
+    return <div>Menü bulunamadı</div>;
   }
 
   return (
@@ -119,8 +120,8 @@ export default function MenuPage() {
             <div key={category.id} className="mb-8" ref={el => { categoryRefs.current[category.id] = el; }}>
               <h2 className="text-2xl font-bold text-center mb-6 mt-4">{category.name}</h2>
               <div className="flex flex-col gap-4">
-                {filteredItems.map((item: any) => (
-                  <div key={item.name} className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100">
+                {filteredItems.map((item: any, index: number) => (
+                  <Link href={`/menu/${business}/${category.id}/${index}`} key={item.name} className="flex items-center justify-between bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-bold">{item.name} <span className="text-orange-500">*</span></h3>
@@ -128,12 +129,12 @@ export default function MenuPage() {
                       <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
                       <p className="text-base font-semibold mt-2">{item.price} ₺</p>
                     </div>
-                    {item.image && (
+                    {item.imageUrl && (
                       <div className="ml-4 w-20 h-20 relative rounded-lg overflow-hidden border border-gray-200">
-                        <Image src={item.image} alt={item.name} fill style={{objectFit:'cover'}} />
+                        <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:'cover'}} />
                       </div>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
