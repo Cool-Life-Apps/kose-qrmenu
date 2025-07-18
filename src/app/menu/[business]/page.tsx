@@ -8,6 +8,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { FiSearch } from 'react-icons/fi';
+import Spinner from '@/app/components/Spinner';
 
 export default function MenuPage() {
   const { business } = useParams();
@@ -60,7 +61,7 @@ export default function MenuPage() {
   }, [business]);
 
   if (loading) {
-    return <div>Yükleniyor...</div>;
+    return <Spinner />;
   }
 
   if (!menu) {

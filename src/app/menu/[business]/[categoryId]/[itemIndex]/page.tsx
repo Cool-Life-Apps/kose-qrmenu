@@ -6,6 +6,7 @@ import { db } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Spinner from '@/app/components/Spinner';
 
 export default function ProductDetailPage() {
   const { business, categoryId, itemIndex } = useParams();
@@ -43,7 +44,7 @@ export default function ProductDetailPage() {
   }, [business, categoryId, itemIndex]);
 
   if (loading) {
-    return <div className="text-center py-8">Yükleniyor...</div>;
+    return <Spinner />;
   }
 
   if (!item) {

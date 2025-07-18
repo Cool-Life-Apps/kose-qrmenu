@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import Spinner from '@/app/components/Spinner';
 
 export default function MenuManagement() {
   const [menu, setMenu] = useState('pastane');
@@ -75,7 +76,7 @@ export default function MenuManagement() {
   };
 
   if (loading) {
-    return <div>Menü yükleniyor...</div>;
+    return <Spinner />;
   }
 
   return (
