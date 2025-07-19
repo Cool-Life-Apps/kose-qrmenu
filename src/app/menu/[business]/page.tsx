@@ -24,7 +24,7 @@ export default function MenuPage() {
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const categoryWidth = 96 + 16; // w-24 (96px) + gap-4 (16px)
+      const categoryWidth = 116 + 16; // w-29 (116px) + gap-4 (16px)
       const scrollAmount = direction === 'left' ? -categoryWidth : categoryWidth;
       const newScrollLeft = container.scrollLeft + scrollAmount;
 
@@ -60,7 +60,7 @@ export default function MenuPage() {
   }, [business]);
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner business={business?.toString()} />;
   }
 
   if (!menu) {
@@ -130,7 +130,7 @@ export default function MenuPage() {
           if (filteredItems.length === 0 && search.trim() === '') {
             return (
               <div key={category.id} className="text-center py-8">
-                <p className={`${cardText}`}>Bu kategoride henüz ürün bulunmamaktadır.</p>
+                <p className="text-white">Bu kategoride henüz ürün bulunmamaktadır.</p>
               </div>
             );
           }
