@@ -1,7 +1,10 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import { Montserrat, Playfair_Display, Bebas_Neue } from 'next/font/google';
+const montserrat = Montserrat({ subsets: ['latin'], weight: ["400", "500", "600"] });
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ["400", "500", "600"] });
+const bebas = Bebas_Neue({ subsets: ['latin'], weight: ["400"] });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Kose QR Menu",
   description: "QR Menu for Kose",
 };
@@ -12,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="tr">
+      <body className={montserrat.className}>{children}</body>
     </html>
   );
 }

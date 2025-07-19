@@ -7,6 +7,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Spinner from '@/app/components/Spinner';
+import { Playfair_Display, Bebas_Neue } from 'next/font/google';
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ["400", "500", "600"] });
+const bebas = Bebas_Neue({ subsets: ['latin'], weight: ["400"] });
 
 export default function ProductDetailPage() {
   const { business, categoryId, itemIndex } = useParams();
@@ -51,34 +54,50 @@ export default function ProductDetailPage() {
     return <div className="text-center py-8">Ürün bulunamadı.</div>;
   }
 
+  const isPastane = business === 'pastane';
+  const mainBg = isPastane ? 'bg-[#5a232b]/95' : 'bg-[#18181b]/95';
+  const headerText = 'text-[#fff0f3]';
+  const headerFont = isPastane ? playfair.className : bebas.className;
+  const cardBg = isPastane ? 'bg-[#fff0f3]' : 'bg-[#232323]';
+  const cardText = isPastane ? 'text-[#5a232b]' : 'text-gray-100';
+  const priceColor = isPastane ? 'text-[#a97b7b]' : 'text-orange-400';
+  const backBtnBg = isPastane ? 'bg-[#fff0f3] hover:bg-[#f8d7dd]' : 'bg-[#232323] hover:bg-[#333]';
+  const backBtnIcon = isPastane ? '#5a232b' : '#F97316';
+
   return (
-    <div className="bg-white min-h-screen max-w-md mx-auto shadow-lg rounded-xl overflow-hidden relative">
+    <div className={`${mainBg} min-h-screen w-full md:max-w-md md:mx-auto md:shadow-lg md:rounded-xl overflow-hidden relative`}>
       {/* Sol üstte ok butonu */}
       <button
         onClick={() => router.back()}
-        className="absolute top-4 left-4 z-10 p-2 rounded-full bg-white shadow hover:bg-gray-100"
+        className={`absolute top-4 left-4 z-10 p-2 rounded-full shadow transition-colors ${backBtnBg}`}
         aria-label="Geri"
       >
-        <svg width="24" height="24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+        <svg width="24" height="24" fill="none" stroke={backBtnIcon} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
           <path d="M15 18l-6-6 6-6" />
         </svg>
       </button>
-      <div className="relative h-64 w-full">
+      <div className="relative w-full" style={{ aspectRatio: '1 / 1', maxWidth: '100vw' }}>
         {item.imageUrl && (
           <Image 
             src={item.imageUrl} 
             alt={item.name} 
-            fill 
-            style={{objectFit:'cover'}} 
-            className="rounded-t-xl"
+            fill
+            style={{ objectFit: 'cover' }}
+            className="!rounded-none w-full h-full"
+            sizes="100vw"
+            priority
           />
         )}
       </div>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-2">{item.name}</h1>
-        <p className="text-gray-600 mb-4">{item.description}</p>
-        <p className="text-2xl font-semibold text-orange-600 mb-6">{item.price} ₺</p>
-        {/* Eski geri butonu kaldırıldı */}
+      <div className={`p-6 ${cardBg} ${cardText}`}>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className={`text-3xl font-bold ${headerFont} text-black`}>{item.name}</h1>
+          <span className="text-2xl font-normal text-black">₺{item.price}</span>
+        </div>
+        {isPastane && (typeof item.glutenFree !== 'undefined') && (
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${item.glutenFree ? 'bg-green-200 text-green-800 border border-green-400' : 'bg-red-200 text-red-800 border border-red-400'}`}>{item.glutenFree ? 'Glutensiz' : 'Glutenli'}</span>
+        )}
+        <p className="mb-4 text-base opacity-90">{item.description}</p>
       </div>
     </div>
   );

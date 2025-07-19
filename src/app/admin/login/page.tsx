@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { auth } from '@/firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { Montserrat } from 'next/font/google';
+const montserrat = Montserrat({ subsets: ['latin'], weight: ["400", "500", "600"] });
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,7 +23,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/admin');
     } catch (err) {
-      setError('Giriş yapılamadı. Lütfen e-posta adresinizi ve şifrenizi kontrol edin.');
+      setError('Giriş yapılamadı. Lütfen e-posta adresinizi ve/veya şifrenizi kontrol edin.');
       console.error(err);
     }
   };
@@ -43,16 +45,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 flex justify-center">
-      <div className="w-full max-w-xs">
-        <h1 className="text-3xl font-bold text-center mb-8">Yönetici Girişi</h1>
-        <form onSubmit={handleLogin} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-purple-50 to-pink-50">
+      <div className="w-full max-w-xs bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
+        <h1 className={`${montserrat.className} text-3xl font-bold text-center mb-8 text-gray-800`}>Yönetici Girişi</h1>
+        <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="email">
               E-posta
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 text-gray-800 bg-gray-50 transition"
               id="email"
               type="email"
               placeholder="Email"
@@ -60,35 +62,34 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="password">
               Şifre
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 text-gray-800 bg-gray-50 transition"
               id="password"
               type="password"
-              placeholder="******************"
+              placeholder="Şifre"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          {error && <p className="text-red-500 text-xs italic">{error}</p>}
-          {message && <p className="text-green-500 text-xs italic">{message}</p>}
-          <div className="flex items-center justify-between">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
-            >
-              Giriş Yap
-            </button>
-            <a
-              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 cursor-pointer"
-              onClick={handleResetPassword}
-            >
-              Şifremi Unuttum?
-            </a>
-          </div>
+          {error && <div className="w-full bg-red-100 text-red-700 px-3 py-2 rounded text-xs font-semibold text-center">{error}</div>}
+          {message && <div className="w-full bg-green-100 text-green-700 px-3 py-2 rounded text-xs font-semibold text-center">{message}</div>}
+          <button
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition mt-2"
+            type="submit"
+          >
+            Giriş Yap
+          </button>
+          <button
+            type="button"
+            className="w-full text-purple-600 hover:underline text-xs mt-2"
+            onClick={handleResetPassword}
+          >
+            Şifremi Unuttum?
+          </button>
         </form>
       </div>
     </div>
