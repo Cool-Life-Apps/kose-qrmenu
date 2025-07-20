@@ -38,6 +38,10 @@ export default function MenuPage() {
 
   const handleTabClick = (id: string) => {
     setActiveCategory(id);
+    // URL'de kategori bilgisini güncelle
+    const url = new URL(window.location.href);
+    url.searchParams.set('category', id);
+    window.history.replaceState({}, '', url.toString());
   };
 
   
@@ -49,9 +53,20 @@ export default function MenuPage() {
         const categoriesCollection = collection(db, `menus/${business}/categories`);
         const categoriesSnapshot = await getDocs(categoriesCollection);
         const categoriesList = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Sıralamaya göre sırala
+        categoriesList.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
         setMenu({ name: `${business.toString().charAt(0).toUpperCase() + business.toString().slice(1)} Menu`, categories: categoriesList });
+        
+        // URL'den kategori bilgisini al
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedCategory = urlParams.get('category');
+        
         if (categoriesList.length > 0) {
-          setActiveCategory(categoriesList[0].id);
+          if (savedCategory && categoriesList.find(cat => cat.id === savedCategory)) {
+            setActiveCategory(savedCategory);
+          } else {
+            setActiveCategory(categoriesList[0].id);
+          }
         }
         setLoading(false);
       }
@@ -123,7 +138,9 @@ export default function MenuPage() {
       {/* İçerik */}
       <div className="px-4 pb-8">
         {menu.categories.filter((category: any) => category.id === activeCategory).map((category: any, idx: number) => {
-          const filteredItems = category.items.filter((item: any) =>
+          // Ürünleri sıralamaya göre sırala
+          const sortedItems = (category.items || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          const filteredItems = sortedItems.filter((item: any) =>
             item.name.toLowerCase().includes(search.toLowerCase()) ||
             item.description.toLowerCase().includes(search.toLowerCase())
           );
@@ -136,25 +153,108 @@ export default function MenuPage() {
           }
           return (
             <div key={category.id} className="mb-8" ref={el => { categoryRefs.current[category.id] = el; }}>
-              <h2 className={`text-2xl font-bold text-center mb-6 mt-4 ${headerFont} ${headerText}`}>{category.name}</h2>
-              <div className="flex flex-col gap-4">
-                {filteredItems.map((item: any, index: number) => (
-                  <Link href={`/menu/${business}/${category.id}/${index}`} key={item.name} className={`flex items-center justify-between ${cardBg} ${cardText} rounded-lg p-3 shadow-sm border border-gray-100`}>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold">{item.name} <span className={isPastane ? 'text-[#a97b7b]' : 'text-orange-500'}>*</span></h3>
-                      </div>
-                      <p className="text-sm mt-1 line-clamp-2">{item.description}</p>
-                      <p className="text-base font-semibold mt-2">{item.price} ₺</p>
+              
+              {/* Alt kategorilere göre gruplandırma */}
+              {(() => {
+                const subcategories = [...new Set(filteredItems.map((item: any) => item.subcategory).filter(Boolean))];
+                
+                if (subcategories.length > 0) {
+                  return (
+                    <div className="flex flex-col gap-6">
+                                             {/* Alt kategorisiz ürünler */}
+                       {(() => {
+                         const itemsWithoutSubcategory = filteredItems.filter((item: any) => !item.subcategory);
+                         if (itemsWithoutSubcategory.length > 0) {
+                           return (
+                             <div className="flex flex-col gap-4">
+                               {itemsWithoutSubcategory.map((item: any, index: number) => {
+                                 const originalIndex = category.items.findIndex((originalItem: any) => 
+                                   originalItem.name === item.name && 
+                                   originalItem.description === item.description && 
+                                   originalItem.price === item.price
+                                 );
+                                 return (
+                                   <Link href={`/menu/${business}/${category.id}/${originalIndex}`} key={item.name} className={`flex items-center justify-between ${cardBg} ${cardText} rounded-lg p-3 shadow-sm border border-gray-100`}>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="text-lg font-bold">{item.name} <span className={isPastane ? 'text-[#a97b7b]' : 'text-orange-500'}>*</span></h3>
+                                    </div>
+                                    <p className="text-sm mt-1 line-clamp-2">{item.description}</p>
+                                    <p className="text-base font-semibold mt-2">{item.price} ₺</p>
+                                  </div>
+                                  {item.imageUrl && (
+                                    <div className="ml-4 w-20 h-20 relative rounded-lg overflow-hidden border border-gray-200">
+                                      <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:'cover'}} />
+                                    </div>
+                                  )}
+                                </Link>
+                              );
+                            })}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      
+                                             {/* Alt kategorili ürünler */}
+                       {subcategories.map((subcategory: any, subIndex: number) => (
+                         <div key={subcategory} className={`flex flex-col gap-4 ${subIndex === 0 ? 'mt-6' : ''}`}>
+                           <h3 className={`text-2xl font-bold text-center ${headerText} mb-1 mt-2`}>
+                             {subcategory}
+                           </h3>
+                          {filteredItems
+                            .filter((item: any) => item.subcategory === subcategory)
+                            .map((item: any, index: number) => {
+                              const originalIndex = category.items.findIndex((originalItem: any) => 
+                                originalItem.name === item.name && 
+                                originalItem.description === item.description && 
+                                originalItem.price === item.price
+                              );
+                              return (
+                                <Link href={`/menu/${business}/${category.id}/${originalIndex}`} key={item.name} className={`flex items-center justify-between ${cardBg} ${cardText} rounded-lg p-3 shadow-sm border border-gray-100`}>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-lg font-bold">{item.name} <span className={isPastane ? 'text-[#a97b7b]' : 'text-orange-500'}>*</span></h3>
+                                  </div>
+                                  <p className="text-sm mt-1 line-clamp-2">{item.description}</p>
+                                  <p className="text-base font-semibold mt-2">{item.price} ₺</p>
+                                </div>
+                                {item.imageUrl && (
+                                  <div className="ml-4 w-20 h-20 relative rounded-lg overflow-hidden border border-gray-200">
+                                    <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:'cover'}} />
+                                  </div>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
-                    {item.imageUrl && (
-                      <div className="ml-4 w-20 h-20 relative rounded-lg overflow-hidden border border-gray-200">
-                        <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:'cover'}} />
-                      </div>
-                    )}
-                  </Link>
-                ))}
-              </div>
+                  );
+                } else {
+                  // Alt kategori yoksa eski görünüm
+                  return (
+                    <div className="flex flex-col gap-4 mt-6">
+                      {filteredItems.map((item: any, index: number) => (
+                        <Link href={`/menu/${business}/${category.id}/${index}`} key={item.name} className={`flex items-center justify-between ${cardBg} ${cardText} rounded-lg p-3 shadow-sm border border-gray-100`}>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold">{item.name} <span className={isPastane ? 'text-[#a97b7b]' : 'text-orange-500'}>*</span></h3>
+                            </div>
+                            <p className="text-sm mt-1 line-clamp-2">{item.description}</p>
+                            <p className="text-base font-semibold mt-2">{item.price} ₺</p>
+                          </div>
+                          {item.imageUrl && (
+                            <div className="ml-4 w-20 h-20 relative rounded-lg overflow-hidden border border-gray-200">
+                              <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:'cover'}} />
+                            </div>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                }
+              })()}
             </div>
           );
         })}

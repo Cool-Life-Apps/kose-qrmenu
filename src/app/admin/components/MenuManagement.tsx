@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import Spinner from '@/app/components/Spinner';
+import AdminSpinner from '@/app/components/AdminSpinner';
 import { Montserrat } from 'next/font/google';
 import { v4 as uuidv4 } from 'uuid';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
@@ -15,11 +15,13 @@ export default function MenuManagement() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategory, setNewCategory] = useState({ name: '', imageUrl: '' });
-  const [newItem, setNewItem] = useState({ name: '', description: '', price: '', imageUrl: '', glutenFree: false });
+  const [newItem, setNewItem] = useState({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '' });
   const [editIndex, setEditIndex] = useState<{[key: string]: number | null}>({});
   const [editItem, setEditItem] = useState<any>({});
   const [imageUploading, setImageUploading] = useState(false);
   const [snackbar, setSnackbar] = useState<{open: boolean, message: string}>({open: false, message: ''});
+  const [newSubcategory, setNewSubcategory] = useState('');
+  const [editingSubcategories, setEditingSubcategories] = useState<{[key: string]: boolean}>({});
   const showSnackbar = (message: string) => {
     setSnackbar({open: true, message});
     setTimeout(() => setSnackbar({open: false, message: ''}), 2500);
@@ -73,8 +75,13 @@ export default function MenuManagement() {
     }
 
     try {
-      const docRef = await addDoc(collection(db, `menus/${menu}/categories`), { name: categoryName, imageUrl: newCategory.imageUrl, items: [] });
-      setCategories(prev => [...prev, { id: docRef.id, name: categoryName, imageUrl: newCategory.imageUrl, items: [] }]);
+      const docRef = await addDoc(collection(db, `menus/${menu}/categories`), { 
+        name: categoryName, 
+        imageUrl: newCategory.imageUrl, 
+        items: [],
+        subcategories: []
+      });
+      setCategories(prev => [...prev, { id: docRef.id, name: categoryName, imageUrl: newCategory.imageUrl, items: [], subcategories: [] }]);
       setNewCategory({ name: '', imageUrl: '' });
       showSnackbar('Kategori başarıyla eklendi');
     } catch (error) {
@@ -97,7 +104,7 @@ export default function MenuManagement() {
       items: arrayUnion(newProduct)
     });
     setCategories(prev => prev.map(cat => cat.id === categoryId ? { ...cat, items: [...(cat.items || []), newProduct] } : cat));
-    setNewItem({ name: '', description: '', price: '', imageUrl: '', glutenFree: false });
+    setNewItem({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '' });
     showSnackbar('Ürün başarıyla eklendi');
   };
 
@@ -108,6 +115,37 @@ export default function MenuManagement() {
     });
     setCategories(prev => prev.map(cat => cat.id === categoryId ? { ...cat, items: (cat.items || []).filter((it: any) => it.id ? it.id !== item.id : it !== item) } : cat));
     showSnackbar('Ürün başarıyla silindi');
+  };
+
+  const handleAddSubcategory = async (categoryId: string) => {
+    if (!newSubcategory.trim()) {
+      showSnackbar('Alt kategori adı boş olamaz');
+      return;
+    }
+    const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
+    await updateDoc(categoryRef, {
+      subcategories: arrayUnion(newSubcategory.trim())
+    });
+    setCategories(prev => prev.map(cat => 
+      cat.id === categoryId 
+        ? { ...cat, subcategories: [...(cat.subcategories || []), newSubcategory.trim()] }
+        : cat
+    ));
+    setNewSubcategory('');
+    showSnackbar('Alt kategori başarıyla eklendi');
+  };
+
+  const handleDeleteSubcategory = async (categoryId: string, subcategoryName: string) => {
+    const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
+    await updateDoc(categoryRef, {
+      subcategories: arrayRemove(subcategoryName)
+    });
+    setCategories(prev => prev.map(cat => 
+      cat.id === categoryId 
+        ? { ...cat, subcategories: (cat.subcategories || []).filter((sub: string) => sub !== subcategoryName) }
+        : cat
+    ));
+    showSnackbar('Alt kategori başarıyla silindi');
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,7 +200,7 @@ export default function MenuManagement() {
   };
 
   if (loading) {
-    return <Spinner />;
+    return <AdminSpinner />;
   }
 
   return (
@@ -249,6 +287,40 @@ export default function MenuManagement() {
                 </>
               )}
             </div>
+            
+            {/* Alt Kategori Yönetimi */}
+            <div className="flex flex-col gap-4 overflow-x-auto">
+              <h4 className="text-lg font-semibold mb-2">Alt Kategoriler</h4>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newSubcategory}
+                  onChange={(e) => setNewSubcategory(e.target.value)}
+                  placeholder="Alt kategori adı"
+                  className="p-2 rounded-md flex-grow font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300"
+                />
+                <button
+                  onClick={() => handleAddSubcategory(category.id)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                >
+                  Ekle
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(category.subcategories || []).map((subcategory: string, index: number) => (
+                  <div key={index} className="flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-full">
+                    <span className="text-sm font-medium">{subcategory}</span>
+                    <button
+                      onClick={() => handleDeleteSubcategory(category.id, subcategory)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col gap-4 overflow-x-auto">
               <h4 className="text-lg font-semibold mb-2">Yeni Ürün Ekle</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full min-w-0 overflow-x-auto">
@@ -267,6 +339,16 @@ export default function MenuManagement() {
                   <option value="glutensiz">Glutensiz</option>
                 </select>
               )}
+              <select 
+                value={newItem.subcategory} 
+                onChange={e => setNewItem({...newItem, subcategory: e.target.value})} 
+                className="p-2 rounded-lg w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 border border-gray-300"
+              >
+                <option value="">Alt kategori seçin</option>
+                {(category.subcategories || []).map((subcategory: string, index: number) => (
+                  <option key={index} value={subcategory}>{subcategory}</option>
+                ))}
+              </select>
               <div className="flex flex-col items-start gap-2">
                 <label className="text-xs text-gray-500">Ürün Görseli</label>
                 <div className="w-full flex items-center gap-4">
@@ -314,6 +396,16 @@ export default function MenuManagement() {
                           <option value="glutensiz">Glutensiz</option>
                         </select>
                       )}
+                      <select 
+                        value={editItem.subcategory || ''} 
+                        onChange={e => setEditItem({...editItem, subcategory: e.target.value})} 
+                        className="p-2 rounded-lg w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 border border-gray-300"
+                      >
+                        <option value="">Alt kategori seçin</option>
+                        {(category.subcategories || []).map((subcategory: string, index: number) => (
+                          <option key={index} value={subcategory}>{subcategory}</option>
+                        ))}
+                      </select>
                       <div className="mb-4 flex flex-col items-start gap-2">
                         <label className="text-xs text-gray-500">Ürün Görseli</label>
                         <div className="w-full flex items-center gap-4">
@@ -347,6 +439,11 @@ export default function MenuManagement() {
                       <div className="flex flex-col gap-1">
                         <p className="font-semibold break-words">{item.name} - <span className="font-normal">{item.price} TL</span></p>
                         <p className="text-sm text-gray-600 break-words">{item.description}</p>
+                        {item.subcategory && (
+                          <span className="inline-block px-2 py-0.5 min-w-0 w-fit whitespace-nowrap leading-tight rounded-full text-xs font-bold mt-1 bg-blue-200 text-blue-800 border border-blue-400">
+                            {item.subcategory}
+                          </span>
+                        )}
                     {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded-md mt-2" />}
                         {menu === 'pastane' && (typeof item.glutenFree !== 'undefined') && (
                           <span className={`inline-block px-2 py-0.5 min-w-0 w-fit whitespace-nowrap leading-tight rounded-full text-xs font-bold mt-1 ${item.glutenFree ? 'bg-green-200 text-green-800 border border-green-400' : 'bg-red-200 text-red-800 border border-red-400'}`}>{item.glutenFree ? 'Glutensiz' : 'Glutenli'}</span>

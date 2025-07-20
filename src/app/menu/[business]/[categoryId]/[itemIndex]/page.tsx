@@ -47,7 +47,7 @@ export default function ProductDetailPage() {
   }, [business, categoryId, itemIndex]);
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner business={business as string} />;
   }
 
   if (!item) {

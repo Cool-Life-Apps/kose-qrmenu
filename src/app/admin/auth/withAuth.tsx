@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { auth } from '@/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/navigation';
-import Spinner from '@/app/components/Spinner'; // Added import for Spinner
+import AdminSpinner from '@/app/components/AdminSpinner';
 
 export default function withAuth(Component: React.ComponentType<any>) {
   return function AuthenticatedComponent(props: any) {
@@ -19,7 +19,7 @@ export default function withAuth(Component: React.ComponentType<any>) {
     }, [user, loading, router]);
 
     if (loading) {
-      return <Spinner />;
+      return <AdminSpinner />;
     }
 
     if (!user) {

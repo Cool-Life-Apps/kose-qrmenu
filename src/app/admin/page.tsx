@@ -7,7 +7,8 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import MenuManagement from './components/MenuManagement';
 import { Montserrat } from 'next/font/google';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 const montserrat = Montserrat({ subsets: ['latin'], weight: ["400", "500", "600"] });
 
 function AdminPage() {
@@ -23,14 +24,25 @@ function AdminPage() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className={`${montserrat.className} text-3xl font-bold text-gray-800`}>Yönetici Paneli</h1>
-          <button 
-            onClick={handleSignOut} 
-            className="group bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded-full transition flex items-center justify-center relative"
-            title="Çıkış Yap"
-          >
-            <ArrowRightOnRectangleIcon className="h-6 w-6" />
-            <span className="absolute opacity-0 group-hover:opacity-100 bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 top-10 whitespace-nowrap transition">Çıkış Yap</span>
-          </button>
+          <div className="flex gap-2">
+            <Link href="/admin/order">
+              <button 
+                className="group bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-full transition flex items-center justify-center relative"
+                title="Sıralamayı Düzenle"
+              >
+                <ArrowsUpDownIcon className="h-6 w-6" />
+                <span className="absolute opacity-0 group-hover:opacity-100 bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 top-10 whitespace-nowrap transition">Sıralamayı Düzenle</span>
+              </button>
+            </Link>
+            <button 
+              onClick={handleSignOut} 
+              className="group bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded-full transition flex items-center justify-center relative"
+              title="Çıkış Yap"
+            >
+              <ArrowRightOnRectangleIcon className="h-6 w-6" />
+              <span className="absolute opacity-0 group-hover:opacity-100 bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 top-10 whitespace-nowrap transition">Çıkış Yap</span>
+            </button>
+          </div>
         </div>
         <MenuManagement />
       </div>
