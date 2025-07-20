@@ -115,8 +115,10 @@ export default function MenuPage() {
       </div>
       {/* Kategoriler */}
       <div className="relative flex items-center">
-        <button onClick={() => handleScroll('left')} className="absolute left-2 z-10 p-2 bg-white text-black rounded-full shadow-md top-1/2 -translate-y-1/2"><FiChevronLeft /></button>
-        <div ref={scrollContainerRef} className="flex gap-4 px-4 pt-2 pb-4 overflow-x-auto scroll-smooth scrollbar-hide whitespace-nowrap">
+        {menu.categories.length > 3 && (
+          <button onClick={() => handleScroll('left')} className="absolute left-2 z-10 p-2 bg-white text-black rounded-full shadow-md top-1/2 -translate-y-1/2"><FiChevronLeft /></button>
+        )}
+        <div ref={scrollContainerRef} className={`flex gap-4 pt-2 pb-4 overflow-x-auto scroll-smooth scrollbar-hide whitespace-nowrap ${menu.categories.length > 3 ? 'px-4' : 'px-4'}`}>
           {menu.categories.map((category: any) => (
             <button
               key={category.id}
@@ -133,7 +135,9 @@ export default function MenuPage() {
             </button>
           ))}
         </div>
-        <button onClick={() => handleScroll('right')} className="absolute right-2 z-10 p-2 bg-white text-black rounded-full shadow-md top-1/2 -translate-y-1/2"><FiChevronRight /></button>
+        {menu.categories.length > 3 && (
+          <button onClick={() => handleScroll('right')} className="absolute right-2 z-10 p-2 bg-white text-black rounded-full shadow-md top-1/2 -translate-y-1/2"><FiChevronRight /></button>
+        )}
       </div>
       {/* İçerik */}
       <div className="px-4 pb-8">
