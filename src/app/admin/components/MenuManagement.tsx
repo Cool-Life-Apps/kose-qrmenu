@@ -101,7 +101,23 @@ export default function MenuManagement() {
   const handleAddItem = async (categoryId: string) => {
     if (!newItem.name.trim() || !newItem.price.trim()) return;
     const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
-    const newProduct = { ...newItem, price: `${newItem.price}`, glutenFree: menu === 'pastane' ? !!newItem.glutenFree : undefined, id: uuidv4() };
+    
+    // Undefined değerleri temizle
+    const cleanNewItem = {
+      name: newItem.name.trim(),
+      description: newItem.description.trim() || '',
+      price: newItem.price.trim(),
+      imageUrl: newItem.imageUrl.trim() || '',
+      subcategory: newItem.subcategory.trim() || '',
+      id: uuidv4()
+    };
+    
+    // Sadece pastane menüsü için glutenFree ekle
+    if (menu === 'pastane') {
+      cleanNewItem.glutenFree = !!newItem.glutenFree;
+    }
+    
+    const newProduct = cleanNewItem;
     await updateDoc(categoryRef, {
       items: arrayUnion(newProduct)
     });

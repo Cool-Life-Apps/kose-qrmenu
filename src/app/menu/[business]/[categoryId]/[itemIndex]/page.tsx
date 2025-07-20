@@ -91,8 +91,8 @@ export default function ProductDetailPage() {
       </div>
       <div className={`p-6 ${cardBg} ${cardText}`}>
         <div className="flex items-center justify-between mb-2">
-          <h1 className={`text-3xl font-bold ${headerFont} text-black`}>{item.name}</h1>
-          <span className="text-2xl font-normal text-black">₺{item.price}</span>
+          <h1 className={`text-3xl font-bold ${headerFont} ${isPastane ? 'text-black' : 'text-orange-500'}`}>{item.name}</h1>
+          <span className={`text-2xl font-normal ${isPastane ? 'text-black' : 'text-orange-500'}`}>₺{item.price}</span>
         </div>
         {isPastane && (typeof item.glutenFree !== 'undefined') && (
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${item.glutenFree ? 'bg-green-200 text-green-800 border border-green-400' : 'bg-red-200 text-red-800 border border-red-400'}`}>{item.glutenFree ? 'Glutensiz' : 'Glutenli'}</span>
