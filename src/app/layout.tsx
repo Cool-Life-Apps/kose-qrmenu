@@ -5,8 +5,8 @@ const playfair = Playfair_Display({ subsets: ['latin'], weight: ["400", "500", "
 const bebas = Bebas_Neue({ subsets: ['latin'], weight: ["400"] });
 
 export const metadata = {
-  title: "Kose QR Menu",
-  description: "QR Menu for Kose",
+  title: "QR Menu",
+  description: "QR Menu",
 };
 
 export default function RootLayout({
