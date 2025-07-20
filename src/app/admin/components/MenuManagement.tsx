@@ -103,7 +103,7 @@ export default function MenuManagement() {
     const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
     
     // Undefined değerleri temizle
-    const cleanNewItem = {
+    const cleanNewItem: any = {
       name: newItem.name.trim(),
       description: newItem.description.trim() || '',
       price: newItem.price.trim(),
