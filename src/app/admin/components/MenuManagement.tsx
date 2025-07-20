@@ -58,6 +58,8 @@ export default function MenuManagement() {
     const categoriesCollection = collection(db, `menus/${menu}/categories`);
     const categoriesSnapshot = await getDocs(categoriesCollection);
     const categoriesList = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Sıralamaya göre sırala
+    categoriesList.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
     setCategories(categoriesList);
     setLoading(false);
   }, [menu]);
@@ -376,7 +378,9 @@ export default function MenuManagement() {
             </div>
             <div>
               <h4 className="text-lg font-semibold mb-2">Ürünler</h4>
-              {category.items && category.items.map((item: any, index: number) => (
+              {category.items && category.items
+                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                .map((item: any, index: number) => (
                 <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-2 gap-2 mb-4">
                   {editIndex[category.id] === index ? (
                     <div className="flex flex-col gap-2 w-full">
@@ -459,7 +463,18 @@ export default function MenuManagement() {
                           <TrashIcon className="h-5 w-5" />
                           <span className="sr-only">Sil</span>
                         </button>
-                  </div>
+                      </div>
+                      {/* Desktop'ta ikonlar sağda */}
+                      <div className="hidden md:flex gap-2">
+                        <button onClick={() => handleEditClick(category.id, item, index)} className="group bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-2 rounded-full transition flex items-center justify-center" title="Düzenle">
+                          <PencilSquareIcon className="h-5 w-5" />
+                          <span className="sr-only">Düzenle</span>
+                        </button>
+                        <button onClick={() => handleDeleteItem(category.id, item)} className="group bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded-full transition flex items-center justify-center" title="Sil">
+                          <TrashIcon className="h-5 w-5" />
+                          <span className="sr-only">Sil</span>
+                        </button>
+                      </div>
                     </>
                   )}
                 </div>
