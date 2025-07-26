@@ -98,6 +98,19 @@ export default function ProductDetailPage() {
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${item.glutenFree ? 'bg-green-200 text-green-800 border border-green-400' : 'bg-red-200 text-red-800 border border-red-400'}`}>{item.glutenFree ? 'Glutensiz' : 'Glutenli'}</span>
         )}
         <p className="mb-4 text-base opacity-90">{item.description}</p>
+        {item.extras && item.extras.length > 0 && (
+          <div className="mt-4">
+            <h2 className="text-xl font-semibold mb-2">Ekstralar</h2>
+            <ul>
+              {item.extras.map((extra: any, index: number) => (
+                <li key={index} className="flex justify-between items-center py-2 border-b border-gray-200">
+                  <span>{extra.name}</span>
+                  <span>+ {extra.price} TL</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

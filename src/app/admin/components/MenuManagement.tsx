@@ -15,12 +15,13 @@ export default function MenuManagement() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategory, setNewCategory] = useState({ name: '', imageUrl: '' });
-  const [newItem, setNewItem] = useState({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '' });
+  const [newItem, setNewItem] = useState<{name: string, description: string, price: string, imageUrl: string, glutenFree: boolean, subcategory: string, extras: {name: string, price: string}[]}>({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '', extras: [] });
   const [editIndex, setEditIndex] = useState<{[key: string]: number | null}>({});
-  const [editItem, setEditItem] = useState<any>({});
+  const [editItem, setEditItem] = useState<any>({ extras: [] });
   const [imageUploading, setImageUploading] = useState(false);
   const [snackbar, setSnackbar] = useState<{open: boolean, message: string}>({open: false, message: ''});
   const [newSubcategory, setNewSubcategory] = useState('');
+  const [newExtra, setNewExtra] = useState({ name: '', price: '' });
   const [editingSubcategories, setEditingSubcategories] = useState<{[key: string]: boolean}>({});
   const showSnackbar = (message: string) => {
     setSnackbar({open: true, message});
@@ -109,6 +110,7 @@ export default function MenuManagement() {
       price: newItem.price.trim(),
       imageUrl: newItem.imageUrl.trim() || '',
       subcategory: newItem.subcategory.trim() || '',
+      extras: newItem.extras || [],
       id: uuidv4()
     };
     
@@ -122,7 +124,7 @@ export default function MenuManagement() {
       items: arrayUnion(newProduct)
     });
     setCategories(prev => prev.map(cat => cat.id === categoryId ? { ...cat, items: [...(cat.items || []), newProduct] } : cat));
-    setNewItem({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '' });
+    setNewItem({ name: '', description: '', price: '', imageUrl: '', glutenFree: false, subcategory: '', extras: [] });
     showSnackbar('Ürün başarıyla eklendi');
   };
 
@@ -153,6 +155,35 @@ export default function MenuManagement() {
     showSnackbar('Alt kategori başarıyla eklendi');
   };
 
+  const handleAddExtra = () => {
+    if (!newExtra.name.trim() || !newExtra.price.trim()) {
+      showSnackbar('Ekstra adı ve fiyatı boş olamaz');
+      return;
+    }
+    setNewItem({ ...newItem, extras: [...newItem.extras, newExtra] });
+    setNewExtra({ name: '', price: '' });
+  };
+
+  const handleRemoveExtra = (index: number) => {
+    setNewItem({ ...newItem, extras: newItem.extras.filter((_, i) => i !== index) });
+  };
+
+  const handleEditExtra = (index: number, field: string, value: string) => {
+    const updatedExtras = [...editItem.extras];
+    updatedExtras[index] = { ...updatedExtras[index], [field]: value };
+    setEditItem({ ...editItem, extras: updatedExtras });
+  };
+
+  const handleUpdateExtra = (index: number) => {
+    // No need to do anything here, state is already updated
+  };
+
+  const handleRemoveEditExtra = (index: number) => {
+    const updatedExtras = [...editItem.extras];
+    updatedExtras.splice(index, 1);
+    setEditItem({ ...editItem, extras: updatedExtras });
+  };
+
   const handleDeleteSubcategory = async (categoryId: string, subcategoryName: string) => {
     const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
     await updateDoc(categoryRef, {
@@ -176,11 +207,11 @@ export default function MenuManagement() {
 
   const handleEditClick = (categoryId: string, item: any, index: number) => {
     setEditIndex(prev => ({ ...prev, [categoryId]: index }));
-    setEditItem(item);
+    setEditItem({ ...item, extras: item.extras || [] });
   };
   const handleEditCancel = (categoryId: string) => {
     setEditIndex(prev => ({ ...prev, [categoryId]: null }));
-    setEditItem({});
+    setEditItem({ extras: [] });
   };
   const handleEditSave = async (categoryId: string, oldItem: any) => {
     const categoryRef = doc(db, `menus/${menu}/categories`, categoryId);
@@ -189,14 +220,14 @@ export default function MenuManagement() {
     if (!categoryDoc) return;
     const items = categoryDoc.data().items || [];
     const updatedItems = items.map((it: any) => {
-      if (it.id && editItem.id && it.id === editItem.id) return editItem;
-      if (!it.id && !editItem.id && it.name === oldItem.name && it.description === oldItem.description && it.price === oldItem.price && it.imageUrl === oldItem.imageUrl) return editItem;
+      if (it.id && editItem.id && it.id === editItem.id) return { ...editItem, extras: editItem.extras || [] };
+      if (!it.id && !editItem.id && it.name === oldItem.name && it.description === oldItem.description && it.price === oldItem.price && it.imageUrl === oldItem.imageUrl) return { ...editItem, extras: editItem.extras || [] };
       return it;
     });
     await updateDoc(categoryRef, { items: updatedItems });
     setCategories(prev => prev.map(cat => cat.id === categoryId ? { ...cat, items: updatedItems } : cat));
     setEditIndex(prev => ({ ...prev, [categoryId]: null }));
-    setEditItem({});
+    setEditItem({ extras: [] });
     showSnackbar('Ürün başarıyla güncellendi');
   };
 
@@ -449,6 +480,29 @@ export default function MenuManagement() {
                         </div>
                       </div>
                       <input type="text" value={editItem.imageUrl || ''} onChange={e => setEditItem({...editItem, imageUrl: e.target.value})} placeholder="Resim URL'si" className="p-2 rounded-lg min-w-0 w-full mb-4 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300" />
+                      {/* Edit Extras */}
+                      <div className="flex flex-col gap-2">
+                        <h5 className="text-md font-semibold">Ekstraları Düzenle</h5>
+                        {editItem.extras && editItem.extras.map((extra: any, index: number) => (
+                          <div key={index} className="flex gap-2 items-center">
+                            <input type="text" value={extra.name} onChange={(e) => handleEditExtra(index, 'name', e.target.value)} placeholder="Ekstra Adı" className="p-2 rounded-lg min-w-0 w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300" />
+                            <input type="text" value={extra.price} onChange={(e) => handleEditExtra(index, 'price', e.target.value.replace(/[^\d]/g, ''))} placeholder="Fiyat" className="p-2 rounded-lg min-w-0 w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300" />
+                            <button onClick={() => handleRemoveEditExtra(index)} className="text-red-600 hover:text-red-800 text-sm">×</button>
+                          </div>
+                        ))}
+                        <div className="flex gap-2">
+                          <input type="text" value={newExtra.name} onChange={(e) => setNewExtra({ ...newExtra, name: e.target.value })} placeholder="Ekstra Adı" className="p-2 rounded-lg min-w-0 w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300" />
+                          <input type="text" value={newExtra.price} onChange={(e) => setNewExtra({ ...newExtra, price: e.target.value.replace(/[^\d]/g, '') })} placeholder="Fiyat" className="p-2 rounded-lg min-w-0 w-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 shadow-sm font-normal tracking-wide text-gray-700 placeholder:text-gray-400 border border-gray-300" />
+                          <button onClick={() => {
+                            if (!newExtra.name.trim() || !newExtra.price.trim()) {
+                              showSnackbar('Ekstra adı ve fiyatı boş olamaz');
+                              return;
+                            }
+                            setEditItem({ ...editItem, extras: [...(editItem.extras || []), newExtra] });
+                            setNewExtra({ name: '', price: '' });
+                          }} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Ekle</button>
+                        </div>
+                      </div>
                       <div className="flex gap-2 mt-2">
                         <button onClick={() => handleEditSave(category.id, item)} className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600">Kaydet</button>
                         <button onClick={() => handleEditCancel(category.id)} className="bg-gray-300 text-gray-800 px-3 py-1 rounded-md hover:bg-gray-400">İptal</button>
@@ -467,6 +521,16 @@ export default function MenuManagement() {
                     {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded-md mt-2" />}
                         {menu === 'pastane' && (typeof item.glutenFree !== 'undefined') && (
                           <span className={`inline-block px-2 py-0.5 min-w-0 w-fit whitespace-nowrap leading-tight rounded-full text-xs font-bold mt-1 ${item.glutenFree ? 'bg-green-200 text-green-800 border border-green-400' : 'bg-red-200 text-red-800 border border-red-400'}`}>{item.glutenFree ? 'Glutensiz' : 'Glutenli'}</span>
+                        )}
+                        {item.extras && item.extras.length > 0 && (
+                          <div className="mt-2">
+                            <h5 className="text-sm font-semibold">Ekstralar:</h5>
+                            <ul className="list-disc list-inside">
+                              {item.extras.map((extra: any, index: number) => (
+                                <li key={index} className="text-xs">{extra.name} - {extra.price} TL</li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                       </div>
                       {/* Mobilde ikonlar görselin altında ortalanmış */}

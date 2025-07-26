@@ -97,7 +97,7 @@ export default function MenuPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <span className={`${headerFont} ${headerText} text-3xl font-bold tracking-tight`}>{isPastane ? 'Curlique Eatery Menü' : (<span className="flex flex-col leading-tight"><span className="text-2xl font-extrabold tracking-widest">RAMAZAN</span><span className="text-xl font-semibold tracking-wider">KARAHAN</span><span className="text-base font-normal tracking-wide">Kuaför Menü</span></span>)}</span>
+          <span className={`${headerFont} ${headerText} text-3xl font-bold tracking-tight`}>{isPastane ? 'Curlique Menü' : (<span className="flex flex-col leading-tight"><span className="text-2xl font-extrabold tracking-widest">RAMAZAN</span><span className="text-xl font-semibold tracking-wider">KARAHAN</span><span className="text-base font-normal tracking-wide">Kuaför Menü</span></span>)}</span>
         </div>
       </div>
       {/* Search */}
